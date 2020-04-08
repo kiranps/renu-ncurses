@@ -1,0 +1,5 @@
+(library
+  (name lib)
+  (flags :standard (-w -40 -w +26))
+  (libraries ncurses_bindings ncurses_generated ctypes.stubs ctypes ctypes.foreign)
+)
