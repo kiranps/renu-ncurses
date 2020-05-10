@@ -1,67 +1,77 @@
 module N = Ncurses_bindings.Bindings(Ncurses_generated);
 open N;
 open Ctypes;
+open Styling.Constants;
+open Styling;
 
-type wstr =
-  | String(string);
+type nodeType =
+  | Div(int, int, int, int);
 
-module TextN = {
-  let createElement = (~x, ~y, ~win, ~value, ~children as _, ()) =>
-    mvwaddstr(win, x, y, value);
-};
+type dom =
+  | Node(list(dom), nodeType)
+  | Text(string);
 
-module Text = {
-  let createElement = (~value, ~children as _, ()) => String(value);
-};
-
-module Window = {
-  let rec renderChildren = (win, children) => {
-    switch (children) {
-    | [String(value), ...tail] =>
-      mvwaddstr(win, 1, 2, value);
-      renderChildren(win, tail);
-    | [] => ()
-    };
-  };
-
-  let createElement = (~x, ~y, ~height, ~width, ~children=?, ()) => {
-    let win = newwin(height, width, x, y);
-    box(win, 0, 0);
-    switch (children) {
-    | Some(values) => renderChildren(win, values)
-    | None => ()
-    };
-    win;
+module Div = {
+  let createElement = (~x, ~y, ~height, ~width, ~children=[], ()) => {
+    Node(children, Div(x, y, height, width));
   };
 };
 
-module Input = {
-  let createElement = (~children as _, ()) => {
-    let win = <Window x=1 y=1 height=3 width=50 />;
-    let data = allocate_n(char, ~count=80);
-    getstr(data);
-    /*keypad(win, true);*/
-    /*let c = wgetch(win);*/
-    /*if (c == 106) {*/
-    /*mvwaddstr(win, 1, 2, "you typed " ++  );*/
-    mvprintw(1, 2, "you typed  %s", data);
-    /*};*/
-    win;
+module Screen = {
+  let createElement = (~x, ~y, ~height, ~width, ~children=[], ()) => {
+    Node(children, Div(x, y, height, width));
   };
 };
 
-module MainWindow = {
-  let createElement = (~children, ()) => {
-    List.iter(x => wrefresh(x), children);
+let s = x => Text(x);
+
+let rec renderer = (~node, ~parentWindow=?, ()) => {
+  switch (node) {
+  | Text(value) =>
+    switch (parentWindow) {
+    | Some((pwin, _)) =>
+      mvwprintw(pwin, 2, 2, value);
+      wrefresh(pwin);
+    | None => mvprintw(2, 2, value)
+    }
+  | Node(children, Div(x, y, height, width)) =>
+    switch (parentWindow) {
+    | Some((pwin, Div(px, py, ph, pw))) =>
+      let win = subwin(pwin, height, width, px + x, py + y);
+      box(win, 0, 0);
+      wrefresh(win);
+      children
+      |> List.iter(node =>
+           renderer(
+             ~node,
+             ~parentWindow=(win, Div(x, y, height, width)),
+             (),
+           )
+         );
+    | None =>
+      let win = newwin(height, width, x, y);
+      box(win, 0, 0);
+      wrefresh(win);
+      children
+      |> List.iter(node =>
+           renderer(
+             ~node,
+             ~parentWindow=(win, Div(x, y, height, width)),
+             (),
+           )
+         );
+    }
+  | _ => ()
   };
+  ();
 };
 
-let render = children => {
+let render = app => {
   let main_window = initscr();
-  ignore(cbreak());
   box(main_window, 0, 0);
   refresh();
-  children();
+  let node = app();
+  renderer(~node, ());
   let _a = getch();
   endwin();
 };
