@@ -1,8 +1,5 @@
 module N = Ncurses_bindings.Bindings(Ncurses_generated);
 open N;
-open Ctypes;
-open Styling.Constants;
-open Styling;
 
 type nodeType =
   | Div(int, int, int, int);
@@ -17,53 +14,22 @@ module Div = {
   };
 };
 
-module Screen = {
-  let createElement = (~x, ~y, ~height, ~width, ~children=[], ()) => {
-    Node(children, Div(x, y, height, width));
-  };
-};
-
 let s = x => Text(x);
 
-let rec renderer = (~node, ~parentWindow=?, ()) => {
+let rec renderer = (node, parent) => {
+  let (pwin, Div(px, py, ph, pw)) = parent;
   switch (node) {
   | Text(value) =>
-    switch (parentWindow) {
-    | Some((pwin, _)) =>
-      mvwprintw(pwin, 2, 2, value);
-      wrefresh(pwin);
-    | None => mvprintw(2, 2, value)
-    }
+    mvwprintw(pwin, 2, 2, value);
+    wrefresh(pwin);
   | Node(children, Div(x, y, height, width)) =>
-    switch (parentWindow) {
-    | Some((pwin, Div(px, py, ph, pw))) =>
-      let win = subwin(pwin, height, width, px + x, py + y);
-      box(win, 0, 0);
-      wrefresh(win);
-      children
-      |> List.iter(node =>
-           renderer(
-             ~node,
-             ~parentWindow=(win, Div(x, y, height, width)),
-             (),
-           )
-         );
-    | None =>
-      let win = newwin(height, width, x, y);
-      box(win, 0, 0);
-      wrefresh(win);
-      children
-      |> List.iter(node =>
-           renderer(
-             ~node,
-             ~parentWindow=(win, Div(x, y, height, width)),
-             (),
-           )
-         );
-    }
+    let win = subwin(pwin, height, width, px + x, py + y);
+    box(win, 0, 0);
+    wrefresh(win);
+    children
+    |> List.iter(node => renderer(node, (win, Div(x, y, height, width))));
   | _ => ()
   };
-  ();
 };
 
 let render = app => {
@@ -71,7 +37,7 @@ let render = app => {
   box(main_window, 0, 0);
   refresh();
   let node = app();
-  renderer(~node, ());
+  renderer(node, (main_window, Div(0, 0, 0, 0)));
   let _a = getch();
   endwin();
 };
