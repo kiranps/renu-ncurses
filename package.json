@@ -5,23 +5,31 @@
   "license": "MIT",
   "esy": {
     "build": "dune build -p #{self.name}",
-    "buildDev":
-      "refmterr dune build --promote-install-files --root . --only-package #{self.name}",
+    "buildDev": "refmterr dune build --promote-install-files --root . --only-package #{self.name}",
     "NOTE": "Optional release Section. Customizes result of `esy release`",
-    "release": { "bin": [ "Hello" ] },
-    "buildEnv": { "ODOC_SYNTAX": "re" }
+    "release": {
+      "bin": [
+        "Hello"
+      ]
+    },
+    "buildEnv": {
+      "ODOC_SYNTAX": "re"
+    }
   },
-  "scripts": { "test": "esy x Hello", "doc": "esy dune build @doc" },
+  "scripts": {
+    "test": "esy x Hello",
+    "doc": "esy dune build @doc"
+  },
   "dependencies": {
-    "@esy-ocaml/reason": ">= 3.4.0 < 3.6.0",
+    "@esy-ocaml/reason": "*",
     "@opam/ctypes": "0.17.1",
     "@opam/ctypes-foreign": "0.4.0",
     "@opam/dune": "*",
     "@opam/ocaml-config": "1",
-    "@opam/tablecloth-native": "0.0.6",
+    "@opam/tablecloth-native": "0.0.7",
     "@reason-native/console": "*",
     "@reason-native/pastel": "*",
-    "ocaml": "^4.9.0"
+    "ocaml": "^4.4.0"
   },
   "devDependencies": {
     "@opam/merlin": "*",
@@ -31,3 +39,4 @@
     "@opam/odoc": "*"
   }
 }
+
