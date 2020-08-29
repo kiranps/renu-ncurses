@@ -25,8 +25,6 @@ module Bindings = (F: Ctypes.FOREIGN) => {
     );
 
   let addch = foreign("addch", char @-> returning(void));
-  let mvwaddch =
-    foreign("mvwaddch", window @-> int @-> int @-> char @-> returning(void));
   let addstr = foreign("addstr", string @-> returning(void));
   let mvwaddstr =
     foreign(
@@ -73,4 +71,21 @@ module Bindings = (F: Ctypes.FOREIGN) => {
     foreign("can_change_color", void @-> returning(bool));
   let init_pair =
     foreign("init_pair", int @-> int @-> int @-> returning(void));
+
+  let mvwhline =
+    foreign(
+      "mvwhline",
+      window @-> int @-> int @-> int @-> int @-> returning(void),
+    );
+  let mvwvline =
+    foreign(
+      "mvwvline",
+      window @-> int @-> int @-> int @-> int @-> returning(void),
+    );
+
+  let mvwaddch =
+    foreign("mvwaddch", window @-> int @-> int @-> int @-> returning(void));
+
+  let mvwaddch1 =
+    foreign("mvwaddch", window @-> int @-> int @-> char @-> returning(void));
 };

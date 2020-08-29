@@ -3,6 +3,25 @@
  (modules ncurses_stub_generator)
  (libraries ncurses_bindings ctypes.stubs ctypes))
 
+(executable
+ (name ncurses_constants_generator)
+ (modules ncurses_constants_generator)
+ (libraries ncurses_constants ctypes.stubs ctypes))
+
+
+(rule
+ (targets ncurses_constants_generator.c)
+ (deps    (:gen ./ncurses_constants_generator.exe))
+ (action  (run %{gen} %{targets})))
+
+(rule
+ (targets ncurses_constants_generator)
+ (deps    (:c_code ./ncurses_constants_generator.c))
+ (action  (run %{ocaml-config:c_compiler} -I %{lib:ctypes:} -I %{ocaml-config:standard_library} -o %{targets} %{c_code})))
+
+
+
+
 (rule
  (targets ncurses_stubs.c ncurses_generated.ml)
  (deps ncurses_stub_generator.exe)

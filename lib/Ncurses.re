@@ -34,7 +34,7 @@ let rec renderer = (node, parent) => {
   let (pwin, Div(style')) = parent;
 
   switch (node) {
-  | Text(value) => text(pwin, 2, 2, value)
+  | Text(value) => text(pwin, 1, 1, value)
   | Node(children, Div(style)) =>
     let {x, y, height, width} = style;
     let {x: px, y: py, height: h', width: w'} = style';
